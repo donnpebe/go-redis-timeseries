@@ -161,7 +161,7 @@ func (t *TimeSeries) FetchRange(begin, end time.Time, decodeJSON bool, dest inte
 
 func (t *TimeSeries) key(tm time.Time) string {
 	tmi := tm.UnixNano()
-	return fmt.Sprintf("%s::ts::%d", t.prefix, t.normalizeTimeInt64(tmi))
+	return fmt.Sprintf("%s::%d", t.prefix, t.normalizeTimeInt64(tmi))
 }
 
 func (t *TimeSeries) normalizeTimeInt64(tm int64) int64 {

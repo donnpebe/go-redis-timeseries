@@ -27,7 +27,7 @@ func main() {
 	for i := 0; i < 300; i++ {
 		data := &Data{fmt.Sprintf("Author %d", i+1), fmt.Sprintf("Message %d", i+1)}
 		tm := now.Add(time.Duration(i) * 10 * time.Millisecond)
-		err = ts.Add(data, true, tm)
+		err = ts.Add(data, tm)
 		if err != nil {
 			panic(err)
 		}
@@ -39,7 +39,7 @@ func main() {
 	fmt.Printf("Get range from %v to %v...\n\n", begin, end)
 
 	var results []*Data
-	if err = ts.FetchRange(begin, end, true, &results); err != nil {
+	if err = ts.FetchRange(begin, end, &results); err != nil {
 		panic(err)
 	}
 

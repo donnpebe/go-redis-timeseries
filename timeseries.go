@@ -29,22 +29,14 @@ func NewTimeSeries(prefix string, timestep time.Duration, db redis.Conn) *TimeSe
 }
 
 // Add add data to timeseries db
-func (t *TimeSeries) Add(data interface{}, encodeJSON bool, tm ...time.Time) (err error) {
+func (t *TimeSeries) Add(data interface{}, tm ...time.Time) (err error) {
 	inputTm := time.Now()
 	if len(tm) > 0 {
 		inputTm = tm[0]
 	}
 	var dataBytes []byte
-	if encodeJSON {
-		if dataBytes, err = json.Marshal(data); err != nil {
-			return
-		}
-	} else {
-		str, ok := data.(string)
-		if !ok {
-			return errors.New("data not string, need to set encodeJSON to be truthy")
-		}
-		dataBytes = []byte(str)
+	if dataBytes, err = json.Marshal(data); err != nil {
+		return
 	}
 
 	t.Lock()
@@ -55,39 +47,27 @@ func (t *TimeSeries) Add(data interface{}, encodeJSON bool, tm ...time.Time) (er
 }
 
 // Fetch get value one time
-func (t *TimeSeries) Fetch(tm time.Time, decodeJSON bool, dest interface{}) (err error) {
+func (t *TimeSeries) Fetch(tm time.Time, dest interface{}) (err error) {
 	d := reflect.ValueOf(dest)
 	if d.Kind() != reflect.Ptr || d.IsNil() {
 		return errors.New("Fetch value must be non-nil pointer")
-	}
-	elem := d.Elem()
-	if !decodeJSON {
-		if elem.Kind() != reflect.String {
-			return errors.New("Fetch value must be pointer to string")
-		}
 	}
 
 	tmi := tm.UnixNano()
 
 	t.Lock()
 	value, err := redis.Strings(t.db.Do("ZRANGEBYSCORE", t.key(tm), tmi, tmi))
-
 	t.Unlock()
 
 	if err != nil {
 		return
 	}
 
-	if decodeJSON {
-		return json.Unmarshal([]byte(value[0]), dest)
-	}
-
-	elem.SetString(value[0])
-	return
+	return json.Unmarshal([]byte(value[0]), dest)
 }
 
 // FetchRange fetch data from the begin time to end time
-func (t *TimeSeries) FetchRange(begin, end time.Time, decodeJSON bool, dest interface{}) (err error) {
+func (t *TimeSeries) FetchRange(begin, end time.Time, dest interface{}) (err error) {
 	d := reflect.ValueOf(dest)
 	if d.Kind() != reflect.Ptr || d.IsNil() {
 		return errors.New("Fetch value must be non-nil pointer")
@@ -99,12 +79,8 @@ func (t *TimeSeries) FetchRange(begin, end time.Time, decodeJSON bool, dest inte
 
 	typ := d.Type().Elem()
 
-	if !decodeJSON && typ.Kind() != reflect.String {
-		return errors.New("Fetch value must be pointer to string slice")
-	}
-
 	isPtr := false
-	if decodeJSON && typ.Kind() == reflect.Ptr {
+	if typ.Kind() == reflect.Ptr {
 		isPtr = true
 		typ = typ.Elem()
 	}
@@ -138,20 +114,17 @@ func (t *TimeSeries) FetchRange(begin, end time.Time, decodeJSON bool, dest inte
 	for _, v := range dumpData {
 		for _, r := range v {
 			d := d.Index(i)
-			if decodeJSON {
-				var val interface{}
-				if isPtr {
-					if d.IsNil() {
-						d.Set(reflect.New(typ))
-					}
-					val = d.Interface()
-				} else {
-					val = d.Addr().Interface()
+			var val interface{}
+			if isPtr {
+				if d.IsNil() {
+					d.Set(reflect.New(typ))
 				}
-				json.Unmarshal([]byte(r), val)
+				val = d.Interface()
 			} else {
-				d.SetString(r)
+				val = d.Addr().Interface()
 			}
+
+			json.Unmarshal([]byte(r), val)
 			i++
 		}
 	}

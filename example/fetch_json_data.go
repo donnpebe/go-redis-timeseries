@@ -25,7 +25,7 @@ func main() {
 	now := time.Now()
 	fmt.Printf("Adding data points...\n\n")
 	data := Data{"author 1", "message 1"}
-	err = ts.Add(&data, true, now)
+	err = ts.Add(&data, now)
 	if err != nil {
 		panic(err)
 	}
@@ -33,7 +33,7 @@ func main() {
 	fmt.Printf("Get from %v...\n\n", now)
 
 	dat := new(Data)
-	if err = ts.Fetch(now, true, dat); err != nil {
+	if err = ts.Fetch(now, dat); err != nil {
 		panic(err)
 	}
 

@@ -22,7 +22,7 @@ func main() {
 	fmt.Printf("Adding data points...\n\n")
 	for i := 0; i < 300; i++ {
 		tm := now.Add(time.Duration(i) * 10 * time.Millisecond)
-		err = ts.Add(strconv.Itoa(i), false, tm)
+		err = ts.Add("data"+strconv.Itoa(i), tm)
 		if err != nil {
 			panic(err)
 		}
@@ -34,7 +34,7 @@ func main() {
 	fmt.Printf("Get range from %v to %v...\n\n", begin, end)
 
 	var strs []string
-	if err = ts.FetchRange(begin, end, false, &strs); err != nil {
+	if err = ts.FetchRange(begin, end, &strs); err != nil {
 		panic(err)
 	}
 

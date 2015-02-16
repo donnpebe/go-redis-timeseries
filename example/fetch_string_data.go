@@ -20,7 +20,7 @@ func main() {
 	fmt.Printf("Adding data points...\n\n")
 
 	now := time.Now()
-	err = ts.Add("10000", false, now)
+	err = ts.Add("data10000", now)
 	if err != nil {
 		panic(err)
 	}
@@ -28,7 +28,7 @@ func main() {
 	fmt.Printf("Get from %v...\n\n", now)
 
 	var str string
-	if err = ts.Fetch(now, false, &str); err != nil {
+	if err = ts.Fetch(now, &str); err != nil {
 		panic(err)
 	}
 

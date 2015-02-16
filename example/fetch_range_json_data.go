@@ -38,7 +38,7 @@ func main() {
 
 	fmt.Printf("Get range from %v to %v...\n\n", begin, end)
 
-	var results []Data
+	var results []*Data
 	if err = ts.FetchRange(begin, end, true, &results); err != nil {
 		panic(err)
 	}

@@ -14,17 +14,19 @@ import (
 // TimeSeries is use to save time series data to redis
 type TimeSeries struct {
 	sync.Mutex
-	prefix   string
-	timestep time.Duration
-	db       redis.Conn
+	prefix     string
+	timestep   time.Duration
+	expiration time.Duration
+	db         redis.Conn
 }
 
 // NewTimeSeries create new TimeSeries
-func NewTimeSeries(prefix string, timestep time.Duration, db redis.Conn) *TimeSeries {
+func NewTimeSeries(prefix string, timestep time.Duration, exp time.Duration, db redis.Conn) *TimeSeries {
 	return &TimeSeries{
-		prefix:   prefix,
-		timestep: timestep,
-		db:       db,
+		prefix:     prefix,
+		timestep:   timestep,
+		expiration: exp,
+		db:         db,
 	}
 }
 
@@ -40,7 +42,14 @@ func (t *TimeSeries) Add(data interface{}, tm ...time.Time) (err error) {
 	}
 
 	t.Lock()
-	_, err = t.db.Do("ZADD", t.key(inputTm), inputTm.UnixNano(), dataBytes)
+	t.db.Send("MULTI")
+	t.db.Send("ZADD", t.key(inputTm), inputTm.UnixNano(), dataBytes)
+	if t.expiration > 0 {
+		sc := redis.NewScript(2, "local ex = redis.pcall('zcard', KEYS[1]) \n if ex == 1 then return redis.call('expire', KEYS[1], KEYS[2]) end")
+		sc.Send(t.db, t.key(inputTm), int64(t.expiration.Seconds()))
+	}
+	_, err = t.db.Do("EXEC")
+
 	t.Unlock()
 
 	return

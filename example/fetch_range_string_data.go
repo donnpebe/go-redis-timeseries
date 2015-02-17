@@ -16,7 +16,9 @@ func main() {
 	}
 	defer conn.Close()
 
-	ts := timeseries.NewTimeSeries("dump::device1", 1*time.Second, conn)
+	// data will be split into per 1 second key and key will have 5 day exiration per key
+	// if didn't want to expire the key, set it to 0
+	ts := timeseries.NewTimeSeries("dump::device1", 1*time.Second, 5*24*time.Hour, conn)
 
 	now := time.Now()
 	fmt.Printf("Adding data points...\n\n")

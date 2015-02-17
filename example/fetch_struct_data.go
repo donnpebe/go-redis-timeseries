@@ -20,7 +20,7 @@ func main() {
 	}
 	defer conn.Close()
 
-	// data will be split into per 1 second key and key will have 5 day exiration per key
+	// data will be split into per 1800 second key and key will have 5 day exiration per key
 	// if didn't want to expire the key, set it to 0
 	ts := timeseries.NewTimeSeries("dump::device1", 1800*time.Second, 5*24*time.Hour, conn)
 

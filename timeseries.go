@@ -77,6 +77,10 @@ func (t *TimeSeries) Fetch(tm time.Time, dest interface{}) (err error) {
 
 // FetchRange fetch data from the begin time to end time
 func (t *TimeSeries) FetchRange(begin, end time.Time, dest interface{}) (err error) {
+	if begin.After(end) {
+		return errors.New("Begin time value must be less than end time value")
+	}
+
 	d := reflect.ValueOf(dest)
 	if d.Kind() != reflect.Ptr || d.IsNil() {
 		return errors.New("Fetch value must be non-nil pointer")

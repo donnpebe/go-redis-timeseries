@@ -9,8 +9,8 @@ import (
 )
 
 type Data struct {
-	Author  string `json:"author"`
-	Message string `json:"mesage"`
+	Author  string
+	Message string
 }
 
 func main() {

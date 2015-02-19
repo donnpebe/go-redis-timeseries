@@ -1,13 +1,13 @@
 package timeseries
 
 import (
-	"encoding/json"
 	"errors"
 	"fmt"
 	"reflect"
 	"sync"
 	"time"
 
+	"github.com/alecthomas/binary"
 	"github.com/garyburd/redigo/redis"
 )
 
@@ -37,7 +37,7 @@ func (t *TimeSeries) Add(data interface{}, tm ...time.Time) (err error) {
 		inputTm = tm[0]
 	}
 	var dataBytes []byte
-	if dataBytes, err = json.Marshal(data); err != nil {
+	if dataBytes, err = binary.Marshal(data); err != nil {
 		return
 	}
 
@@ -72,7 +72,7 @@ func (t *TimeSeries) Fetch(tm time.Time, dest interface{}) (err error) {
 		return
 	}
 
-	return json.Unmarshal([]byte(value[0]), dest)
+	return binary.Unmarshal([]byte(value[0]), dest)
 }
 
 // FetchRange fetch data from the begin time to end time
@@ -137,7 +137,7 @@ func (t *TimeSeries) FetchRange(begin, end time.Time, dest interface{}) (err err
 				val = d.Addr().Interface()
 			}
 
-			json.Unmarshal([]byte(r), val)
+			binary.Unmarshal([]byte(r), val)
 			i++
 		}
 	}

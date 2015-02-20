@@ -11,6 +11,8 @@ import (
 	"github.com/garyburd/redigo/redis"
 )
 
+var ErrNotFound = errors.New("record not found")
+
 // TimeSeries is use to save time series data to redis
 type TimeSeries struct {
 	sync.Mutex
@@ -70,6 +72,10 @@ func (t *TimeSeries) Fetch(tm time.Time, dest interface{}) (err error) {
 
 	if err != nil {
 		return
+	}
+
+	if len(value) == 0 {
+		return ErrNotFound
 	}
 
 	return binary.Unmarshal([]byte(value[0]), dest)

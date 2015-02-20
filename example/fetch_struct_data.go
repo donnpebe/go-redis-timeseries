@@ -28,7 +28,7 @@ func main() {
 	fmt.Printf("Adding data points...\n\n")
 	data := Data{"author 1", "message 1"}
 	err = ts.Add(&data, now)
-	if err != nil {
+	if err != nil && err != timeseries.ErrNotFound {
 		panic(err)
 	}
 

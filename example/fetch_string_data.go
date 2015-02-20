@@ -23,7 +23,7 @@ func main() {
 
 	now := time.Now()
 	err = ts.Add("data10000", now)
-	if err != nil {
+	if err != nil && err != timeseries.ErrNotFound {
 		panic(err)
 	}
 
